@@ -1,0 +1,115 @@
+{
+    "hc_output": [
+        [
+            {
+                "priority": "4420.0", 
+                "error_code": 0, 
+                "block_id": "309546", 
+                "pair_role": "main", 
+                "checkin_time": "2019-08-30 10:40:00", 
+                "emp_distance": "0.0", 
+                "start_time": "2019-08-30 10:30:00", 
+                "checkout_time": "2019-08-30 11:25:00", 
+                "cus_coordinate": "10.293933,105.7703559", 
+                "assigned": "2", 
+                "emp_id": "DTPPN.TUANTA2", 
+                "request_id": "1167168606", 
+                "error_desc": "Phan cong thanh cong, OK", 
+                "type": "2"
+            }
+        ]
+    ], 
+    "input": [
+        {
+            "tasks": [
+                {
+                    "time_end": "2019-08-30 12:00:00", 
+                    "cus_coordinate": "10.293933,105.7703559", 
+                    "sub_type_1_desc": "Bao tri logic", 
+                    "vip": 3, 
+                    "reason_out_case_desc": "", 
+                    "sub_type_2": 11, 
+                    "reason_out_case_type": -1, 
+                    "vip_desc": "Khac", 
+                    "impact": 0, 
+                    "sub_type_1": 2, 
+                    "time_start": "2019-08-30 11:00:00", 
+                    "manual_priority": 0, 
+                    "request_status": 0, 
+                    "number_emp_needed": 1, 
+                    "type": 2, 
+                    "request_created_at": "2019-08-30 09:12:04", 
+                    "vip2": 8, 
+                    "appointmentdate_emp": "", 
+                    "appointmentdate": "2019-08-30 12:00:00", 
+                    "releaseoutdate": "", 
+                    "box": 0, 
+                    "date_confirmed": 1, 
+                    "type_desc": "Bao tri", 
+                    "emp_speciallized": "", 
+                    "request_id": 1167168606, 
+                    "emp_reserved": "", 
+                    "sub_type_2_desc": "KH mua doi thiet b\u1ecb"
+                }
+            ], 
+            "block_id": 309546, 
+            "block_gray": "", 
+            "block_name": "TP.Sa Dec-001", 
+            "block_distance": 6000.0, 
+            "res_time": "2019-08-30 09:33:47", 
+            "resources": [
+                {
+                    "available": "10:25 - 18:30", 
+                    "request_impossible": "", 
+                    "type_desc": "NVKT", 
+                    "emp_coordinate": "10.2923937,105.7512372", 
+                    "rank": "A", 
+                    "emp_status": 1, 
+                    "emp_level": 5, 
+                    "emp_assigned": 2, 
+                    "emp_id": "DTPPN.DANHNT", 
+                    "type": 1
+                }, 
+                {
+                    "available": "10:10 - 18:30", 
+                    "request_impossible": "1069398816_1", 
+                    "type_desc": "NVKT", 
+                    "emp_coordinate": "10.2722808,105.7962116", 
+                    "rank": "A", 
+                    "emp_status": 1, 
+                    "emp_level": 5, 
+                    "emp_assigned": 2, 
+                    "emp_id": "DTPPN.TAINN", 
+                    "type": 1
+                }, 
+                {
+                    "available": "09:33 - 18:30", 
+                    "request_impossible": "", 
+                    "type_desc": "KTV", 
+                    "emp_coordinate": "10.2907658571,105.751298571", 
+                    "rank": "A", 
+                    "emp_status": 1, 
+                    "emp_level": 5, 
+                    "emp_assigned": 3, 
+                    "emp_id": "DTPPN.TUANTA2", 
+                    "type": 2
+                }, 
+                {
+                    "available": "09:33 - 18:30", 
+                    "request_impossible": "", 
+                    "type_desc": "NVKT", 
+                    "emp_coordinate": "10.4558429,105.6214601", 
+                    "rank": "B", 
+                    "emp_status": 0, 
+                    "emp_level": 1, 
+                    "emp_assigned": 1, 
+                    "emp_id": "DTPPN.TAMNC", 
+                    "type": 1
+                }
+            ]
+        }
+    ], 
+    "version": "production_20190827_2033", 
+    "res_time": "20190830_093347", 
+    "glpk_output": []
+}
