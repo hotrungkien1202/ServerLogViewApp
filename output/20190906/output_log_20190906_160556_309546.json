@@ -1,0 +1,127 @@
+{
+    "hc_output": [
+        [
+            {
+                "priority": "0", 
+                "error_code": 1, 
+                "block_id": "309546", 
+                "pair_role": "0", 
+                "checkin_time": "0", 
+                "emp_distance": "0", 
+                "start_time": "0", 
+                "checkout_time": "0", 
+                "cus_coordinate": "0.0,0.0", 
+                "assigned": "0", 
+                "emp_id": "0", 
+                "request_id": "0", 
+                "error_desc": "NOT AVAILABLE", 
+                "type": "0"
+            }
+        ]
+    ], 
+    "input": [
+        {
+            "tasks": [
+                {
+                    "time_end": "2019-09-07 17:00:00", 
+                    "cus_coordinate": "10.3045551,105.7629989", 
+                    "sub_type_1_desc": "Bao tri vat ly", 
+                    "vip": 3, 
+                    "reason_out_case_desc": "nha tuyen hen lai", 
+                    "sub_type_2": 4, 
+                    "reason_out_case_type": 99, 
+                    "vip_desc": "Khac", 
+                    "impact": 3, 
+                    "sub_type_1": 1, 
+                    "time_start": "2019-09-07 16:00:00", 
+                    "manual_priority": 0, 
+                    "request_status": 0, 
+                    "number_emp_needed": 1, 
+                    "type": 2, 
+                    "request_created_at": "2019-09-06 11:47:57", 
+                    "vip2": 8, 
+                    "appointmentdate_emp": "2019-09-07 17:00:00", 
+                    "appointmentdate": "2019-09-07 17:00:00", 
+                    "releaseoutdate": "2019-09-06 14:24:17", 
+                    "box": 0, 
+                    "date_confirmed": 1, 
+                    "type_desc": "Bao tri", 
+                    "emp_speciallized": "", 
+                    "request_id": 1167811806, 
+                    "emp_reserved": "", 
+                    "sub_type_2_desc": "Khong co tin hieu"
+                }
+            ], 
+            "block_id": 309546, 
+            "block_gray": "", 
+            "block_name": "TP.Sa Dec-001", 
+            "block_distance": 6000.0, 
+            "res_time": "2019-09-06 15:04:56", 
+            "resources": [
+                {
+                    "available": "14:13 - 18:30", 
+                    "request_impossible": "", 
+                    "type_desc": "NVKT", 
+                    "emp_coordinate": "10.30076,105.765701", 
+                    "rank": "B", 
+                    "emp_status": 0, 
+                    "emp_level": 1, 
+                    "emp_assigned": 1, 
+                    "emp_id": "DTPPN.TAMNC", 
+                    "type": 1
+                }, 
+                {
+                    "available": "14:54 - 18:30", 
+                    "request_impossible": "", 
+                    "type_desc": "NVKT", 
+                    "emp_coordinate": "10.288122,105.7566815", 
+                    "rank": "B", 
+                    "emp_status": 0, 
+                    "emp_level": 3, 
+                    "emp_assigned": 4, 
+                    "emp_id": "DTPPN.THINHHD", 
+                    "type": 1
+                }, 
+                {
+                    "available": "15:30 - 18:30", 
+                    "request_impossible": "1069398816_1", 
+                    "type_desc": "NVKT", 
+                    "emp_coordinate": "10.2987474,105.7647428", 
+                    "rank": "A", 
+                    "emp_status": 1, 
+                    "emp_level": 5, 
+                    "emp_assigned": 2, 
+                    "emp_id": "DTPPN.TAINN", 
+                    "type": 1
+                }, 
+                {
+                    "available": "15:20 - 18:30", 
+                    "request_impossible": "", 
+                    "type_desc": "KTV", 
+                    "emp_coordinate": "10.2830913,105.741376", 
+                    "rank": "A", 
+                    "emp_status": 1, 
+                    "emp_level": 5, 
+                    "emp_assigned": 6, 
+                    "emp_id": "DTPPN.TUANTA2", 
+                    "type": 2
+                }, 
+                {
+                    "available": "09:44 - 18:30", 
+                    "request_impossible": "", 
+                    "type_desc": "NVKT", 
+                    "emp_coordinate": "10.2743136,105.7935242", 
+                    "rank": "A", 
+                    "emp_status": 0, 
+                    "emp_level": 5, 
+                    "emp_assigned": 1, 
+                    "emp_id": "DTPPN.DANHNT", 
+                    "type": 1
+                }
+            ]
+        }
+    ], 
+    "version": "production_20190831_0845", 
+    "res_time": "20190906_150456", 
+    "glpk_output": []
+}
