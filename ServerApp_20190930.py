@@ -238,6 +238,38 @@ def statistic_assigned_task_for_employee(parentFolder, time):
 		pass
 	return json.dumps(result)
 
+@app.route('/maps/<parentFolder>/<block_id>', methods = ['GET'])
+def get_data_to_show_block_map(parentFolder, block_id):
+	command = 'grep -E "\\"assigned\\"\s*\:\s*\\"1\\"" -rl ./output/' + parentFolder + "/*/" + block_id + "/ > map_block_data.txt"
+	os.system(command)
+	emp_dict = {}
+	paths = []
+	with open("map_block_data.txt") as file:
+		for line in file:
+			paths.append(str(line).replace('\n', ''))
+	paths.sort()
+	for path in paths:
+		#print(path)
+		content = read_json_from_file(path)
+		hcOutput = content["hc_output"]
+		for hc in hcOutput:
+			if int(hc["assigned"]) == 1:
+				obj = {}
+				obj["emp_id"] = hc["emp_id"]
+				obj["request_id"] = hc["request_id"]
+				obj["cus_coordinate"] = hc["cus_coordinate"]
+				obj["emp_distance"] = hc["emp_distance"]
+				if hc["emp_id"] in emp_dict:					
+					emp_dict[hc["emp_id"]].append(obj)
+				else:
+					emp_dict[hc["emp_id"]] = [obj]
+
+	result = []
+	for v in emp_dict.values():
+		result.append(v)
+	#result.sort(key = lambda x: x["start_time"])
+	return json.dumps(result)
+
 @app.route('/maps/<parentFolder>/<block_id>/<emp_id>', methods = ['GET'])
 def get_data_to_show_map(parentFolder, block_id, emp_id):
 	command = 'grep -E "\\"assigned\\"\s*\:\s*\\"1\\"" -rl ./output/' + parentFolder + "/*/" + block_id + "/ > map_data.txt"
