@@ -10,6 +10,40 @@ app = Flask(__name__)
 CORS(app)
 baseURL = "./output"
 
+@app.route('/block_all/<parentFolder>/<time>', methods = ['GET'])
+def get_all_blocks_data(parentFolder, time) :
+	result = []
+	try:
+		blocks = os.listdir(baseURL + "/" + parentFolder + "/" + time)		
+		for block in blocks:
+			filenames = os.listdir(baseURL + "/" + parentFolder + "/" + time + "/" + block)
+			filenames.sort(reverse=True)
+			filename = filenames[0]
+			path = baseURL + "/" + parentFolder + "/" + time + "/" + block + "/" + filename
+			#print(path)
+			b = {}
+			data = read_json_from_file(path)
+			input_ = data['input'][0]
+			hc_output_ = data['hc_output']
+			b['block_id'] = input_['block_id']
+			b['block_name'] = input_['block_name']
+			b['block_distance'] = input_['block_distance']
+			b['block_center'] = input_['block_center']
+			b['version'] = data['version']
+			b['emp_count'] = len(input_["resources"])
+			load_factor = 0.0
+			if len(hc_output_) > 0:
+				load_factor = hc_output_[0]["load_factor"]			
+			b['load_factor'] = load_factor
+			# load factor
+			
+			if not any(r['block_id'] == b['block_id'] for r in result):
+				result.append(b)
+		result.sort(key=lambda x: x['load_factor'])
+	except Exception as e:
+		pass
+	return json.dumps(result)
+
 @app.route('/filenames/<parentFolder>/<time>/<block>', methods = ['GET'])
 def get_file(parentFolder, time, block):
 	result = []
@@ -144,7 +178,7 @@ def read_json_from_file(path):
 def get_customer_level_by_request_id(tasks, request_id):
 	for task in tasks:
 		if int(task['request_id']) == int(request_id):
-			return task['manual_priority'], task['number_emp_needed'], task['sub_type_1'], task['reason_out_case_desc'], task['appointmentdate'], task['sub_type_2'], task['emp_speciallized'], task['contract']
+			return task['manual_priority'], task['number_emp_needed'], task['sub_type_1'], task['reason_out_case_desc'], task['appointmentdate'], task['sub_type_2'], task['emp_speciallized'], task['contract'], task["date_confirmed"]
 	return 0,0,0,0,0,0,0
 
 def get_assigned_task_by_request_id(hcOutputData, tasks, request_id):
@@ -195,7 +229,7 @@ def download_input(parentFolder, filename):
 @app.route('/contract/<parentFolder>/<contract_id>', methods = ['GET'])
 def get_files_by_contract(parentFolder, contract_id):
 	fileNames = []
-	command = 'grep -E "\\"contract\\"\s*\:\s*\\"' + contract_id + '\\"" -rl ./output/' + parentFolder + "/ > contract_data.txt"
+	command = 'grep -E ' + contract_id + ' -rl ./output/' + parentFolder + "/ > contract_data.txt"
 	os.system(command)
 	with open("contract_data.txt") as file:
 		for line in file:
@@ -232,11 +266,13 @@ def statistic_assigned_task_for_employee(parentFolder, time):
 			obj["block_name"] = data["input"][0]["block_name"]
 			obj["employees"] = employees
 			obj["capacity"] = "%.2f" % (capacity/float(len(employees)))
+			obj["load_factor"] = data["hc_output"][0]["load_factor"]
 			result.append(obj)
 			result.sort(key = lambda x: x['block_name'])
 	except Exception as e:
 		pass
 	return json.dumps(result)
+
 
 @app.route('/maps/<parentFolder>/<block_id>', methods = ['GET'])
 def get_data_to_show_block_map(parentFolder, block_id):
@@ -252,23 +288,33 @@ def get_data_to_show_block_map(parentFolder, block_id):
 		#print(path)
 		content = read_json_from_file(path)
 		hcOutput = content["hc_output"]
+		inputJs = content["input"][0]
 		for hc in hcOutput:
 			if int(hc["assigned"]) == 1:
 				obj = {}
 				obj["emp_id"] = hc["emp_id"]
+				obj["block_center"] = inputJs["block_center"]
 				obj["request_id"] = hc["request_id"]
 				obj["cus_coordinate"] = hc["cus_coordinate"]
 				obj["emp_distance"] = hc["emp_distance"]
-				if hc["emp_id"] in emp_dict:					
-					emp_dict[hc["emp_id"]].append(obj)
-				else:
-					emp_dict[hc["emp_id"]] = [obj]
+				if not is_exists_request_id_in_dict(str(obj["request_id"]), emp_dict):
+					if hc["emp_id"] in emp_dict:					
+						emp_dict[hc["emp_id"]].append(obj)
+					else:
+						emp_dict[hc["emp_id"]] = [obj]
 
 	result = []
 	for v in emp_dict.values():
 		result.append(v)
 	#result.sort(key = lambda x: x["start_time"])
 	return json.dumps(result)
+
+def is_exists_request_id_in_dict(request_id, dict):
+	for key, value in dict.iteritems():
+		for request in value:
+			if str(request ["request_id"]) == str(request_id):
+				return True
+	return False
 
 @app.route('/maps/<parentFolder>/<block_id>/<emp_id>', methods = ['GET'])
 def get_data_to_show_map(parentFolder, block_id, emp_id):
@@ -283,20 +329,26 @@ def get_data_to_show_map(parentFolder, block_id, emp_id):
 	for path in paths:
 		content = read_json_from_file(path)
 		hcOutput = content["hc_output"]
-		tasks = content["input"][0]["tasks"]
+		inputJs = content["input"][0]
+		tasks = inputJs["tasks"]		
 		for hc in hcOutput:
 			if int(hc["assigned"]) == 1:
 				if hc["request_id"] in data:
 					del data[hc["request_id"]]
-				if hc["emp_id"] == emp_id:
+				file_name = path.strip().split("/")[5]
+				if hc["emp_id"] == emp_id and not is_exists_request_id(file_name, hc["request_id"], parentFolder, block_id):
 					obj = {}
 					obj["cus_coordinate"] = hc["cus_coordinate"]
 					obj["emp_distance"] = hc["emp_distance"]
 					obj["task_type"] = hc["type"]
+					obj["block_center"] = inputJs["block_center"]
 					obj["start_time"] = get_hour_and_minute_in_time(hc["start_time"])
 					obj["checkout_time"] = get_hour_and_minute_in_time(hc["checkout_time"])
-					obj["late_time"] = hc["late_time"]
-					obj["appointmentdate"] = get_hour_and_minute_in_time(get_customer_level_by_request_id(tasks, hc["request_id"])[4])
+					tup = get_customer_level_by_request_id(tasks, hc["request_id"])
+					obj["appointmentdate"] = get_hour_and_minute_in_time(tup[4])
+					checkout_time = datetime.datetime.strptime(hc["checkout_time"], '%Y-%m-%d %H:%M:%S')
+					apdate = datetime.datetime.strptime(tup[4], '%Y-%m-%d %H:%M:%S')
+					obj["late_time"] = calculate_kpi_hen_fr_now(checkout_time, hc["type"], apdate, tup[8])
 					# print(obj["res_time"])
 					data[hc["request_id"]] = obj
 	result = []
@@ -305,9 +357,57 @@ def get_data_to_show_map(parentFolder, block_id, emp_id):
 	result.sort(key = lambda x: x["start_time"])
 	return json.dumps(result)
 
+def is_exists_request_id(file_name, request_id, parentFolder, block_id):
+	command = 'grep -E "\\"request_id\\"\s*\:\s*\\"' + request_id + '\\"" -rl ./output/' + parentFolder + "/*/" + block_id + "/ > request_id_file.txt"
+	os.system(command)
+	request_id_file = []
+	with open("request_id_file.txt") as file:
+		for line in file:
+			request_id_file.append(str(line).replace('\n', ''))
+	request_id_file.sort()
+	for file in request_id_file:
+		file1 = file.strip().split("/")[5]
+		if get_time_from_file_name(file1) > get_time_from_file_name(file_name):
+			command1 = 'grep -E "\\"assigned\\"\s*\:\s*\\"2\\"" -r ' + file + " > assigned2.txt"
+			os.system(command1)
+			if os.stat("assigned2.txt").st_size > 0:
+				return True
+	return False
+	
+
+def get_time_from_file_name(file_name):
+	return file_name.strip().split(".")[0].split("_")[3]
+
 def get_hour_and_minute_in_time(custom_time):
 	tmp = custom_time.strip().split(" ")[1]
 	return tmp[0:5]
+
+def calculate_kpi_hen_fr_now(_res_time, task_task_type, task_appointment_date, task_date_confirmed):
+    # type: (datetime, object, datetime, datetime) -> object
+    appointmentdate = task_appointment_date
+
+    m = task_appointment_date.minute
+    if 5 <= m <= 25 or 35 <= m <= 55: # hen khung gio le
+        if task_task_type == 1:
+            appointmentdate = task_appointment_date + datetime.timedelta(hours=2.0 - m / 60.)
+        else:
+            appointmentdate = task_appointment_date + datetime.timedelta(hours=1.0 - m / 60.)
+
+    if task_task_type == 1:
+        if task_date_confirmed == 0:
+            kpi_date = appointmentdate + datetime.timedelta(hours=48)
+        else:
+            kpi_date = appointmentdate + datetime.timedelta(hours=1.5)
+    else:
+
+        if task_date_confirmed == 0:
+            kpi_date = appointmentdate + datetime.timedelta(hours=2)
+        else:
+            kpi_date = appointmentdate + datetime.timedelta(hours=1)
+
+    dt = kpi_date - _res_time
+    kpi_hen_fr_now = dt.days * 24 * 60 + dt.seconds // 60  # the number of minutes
+    return kpi_hen_fr_now
 
 def start_tornado(app, port, force_https=False):
 
