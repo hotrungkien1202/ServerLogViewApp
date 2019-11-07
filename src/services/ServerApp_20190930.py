@@ -11,7 +11,7 @@ from models.log_emps import *
 
 app = Flask(__name__)
 CORS(app)
-baseURL = "./output"
+baseURL = "./services/output"
 
 @app.route('/block_all/<parentFolder>/<time>', methods = ['GET'])
 def get_all_blocks_data(parentFolder, time) :
