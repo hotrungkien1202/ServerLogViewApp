@@ -343,7 +343,7 @@ def statistic_assigned_task_for_employee_bk(parentFolder, time):
                             #print(requests)
                             requests.append(rq)
                             for tmp_emp_id in emps:
-                                file_name = path.strip().split("/")[5]
+                                file_name = path.strip().split("/")[6]
                                 if tmp_emp_id["emp_id"] == hc["emp_id"] and not is_exists_request_id(file_name, hc["request_id"], parentFolder, block_id):
                                     if str(hc["request_id"]) not in tmp_emp_id["tasks"]:
                                         tmp_emp_id["tasks"].append(str(hc["request_id"]))
@@ -424,7 +424,7 @@ def count_assigned_task_emp(emp_id, parentFolder, block_id, time):
             if int(hc["assigned"]) == 1:
                 if hc["request_id"] in result:
                     result.remove(hc["request_id"])
-                file_name = path.strip().split("/")[5]
+                file_name = path.strip().split("/")[6]
                 if hc["emp_id"] == emp_id and not is_exists_request_id(file_name, hc["request_id"], parentFolder, block_id):
                     result.append(hc["request_id"])
 
@@ -459,7 +459,7 @@ def get_data_to_show_block_map(parentFolder, time, block_id):
                 inputJs = content["input"][0]
                 for hc in hcOutput:
                     if int(hc["assigned"]) == 1:
-                        file_name = path.strip().split("/")[5]
+                        file_name = path.strip().split("/")[6]
                         if not is_exists_request_id(file_name, hc["request_id"], parentFolder, block_id):
                             obj = {}
                             obj["emp_id"] = hc["emp_id"]
@@ -499,7 +499,7 @@ def get_data_to_show_map(parentFolder, block_id, emp_id, time):
             paths.append(str(line).replace('\n', ''))
     paths.sort()
     for path in paths:
-        file_name = path.strip().split("/")[5]
+        file_name = path.strip().split("/")[6]
         file_time = file_name.strip().split("_")[3][0:2]
         if int(file_time) > int(time):
             break
@@ -613,7 +613,7 @@ def is_exists_request_id(file_name, request_id, parentFolder, block_id):
             request_id_file.append(str(line).replace('\n', ''))
     request_id_file.sort()
     for file in request_id_file:
-        file1 = file.strip().split("/")[5]
+        file1 = file.strip().split("/")[6]
         if get_time_from_file_name(file1) > get_time_from_file_name(file_name):
             command1 = 'grep -E "\\"assigned\\"\s*\:\s*\\"2\\"" -r ' + file + " > assigned2.txt"
             os.system(command1)
