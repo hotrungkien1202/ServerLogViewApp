@@ -91,16 +91,16 @@ def get_blocks(parentFolder, time):
             b = {}
             data = read_json_from_file(path)
             input_ = data['input'][0]
-            b['block_id'] = input_['block_id']
-            b['block_name'] = input_['block_name']
-            b['block_distance'] = input_['block_distance']
-            b['block_ability'] = input_['block_ability']
+            b['block_id'] = input_.get('block_id', '')
+            b['block_name'] = input_.get('block_name', '')
+            b['block_distance'] = input_.get('block_distance', '')
+            b['block_ability'] = input_.get('block_ability', '')
             b['version'] = data['version']
             if not any(r['block_id'] == b['block_id'] for r in result):
                 result.append(b)
         result.sort(key=lambda x: x['block_name'])
     except Exception as e:
-        pass
+        raise e
     return json.dumps(result)
 
 @app.route('/filecontent/<parentFolder>/<filename>', methods = ['GET'])
