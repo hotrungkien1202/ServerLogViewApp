@@ -237,7 +237,7 @@ def download_input(parentFolder, filename):
 @app.route('/contract/<parentFolder>/<contract_id>', methods = ['GET'])
 def get_files_by_contract(parentFolder, contract_id):
     fileNames = []
-    command = 'grep -E ' + contract_id + ' -rl ./output/' + parentFolder + "/ > contract_data.txt"
+    command = 'grep -E ' + contract_id + ' -rl ' + baseURL + '/' + parentFolder + "/ > contract_data.txt"
     os.system(command)
     with open("contract_data.txt") as file:
         for line in file:
@@ -297,7 +297,7 @@ def statistic_assigned_task_for_employee_bk(parentFolder, time):
     blocks = []
     requests = []
     try:
-        command = 'grep -E "\\"assigned\\"\s*\:\s*\\"1\\"" -rl ./output/' + parentFolder + "/ > summary_blocks_data.txt"
+        command = 'grep -E "\\"assigned\\"\s*\:\s*\\"1\\"" -rl ' + baseURL + '/' + parentFolder + "/ > summary_blocks_data.txt"
         os.system(command)
         emp_dict = {}
         paths = []
@@ -408,7 +408,7 @@ def get_load_factor(parentFolder, block_id, time):
     return load_factor
 
 def count_assigned_task_emp(emp_id, parentFolder, block_id, time):
-    command = 'grep -E "\\"assigned\\"\s*\:\s*\\"1\\"" -rl ./output/' + parentFolder + "/" + time + "/" + block_id + "/ > assigned_task_emp.txt"
+    command = 'grep -E "\\"assigned\\"\s*\:\s*\\"1\\"" -rl ' + baseURL + '/' + parentFolder + "/" + time + "/" + block_id + "/ > assigned_task_emp.txt"
     os.system(command)
     paths = []
     with open("assigned_task_emp.txt") as file:
@@ -434,7 +434,7 @@ def count_assigned_task_emp(emp_id, parentFolder, block_id, time):
 def get_data_to_show_block_map(parentFolder, time, block_id):
     try:
         # show on map all employess that have assigned = 1 from first time zone to [time] "time"
-        command = 'grep -E "\\"assigned\\"\s*\:\s*\\"1\\"" -rl ./output/' + parentFolder + "/*/" + block_id + "/ > map_block_data.txt"
+        command = 'grep -E "\\"assigned\\"\s*\:\s*\\"1\\"" -rl ' + baseURL + '/' +  parentFolder + "/*/" + block_id + "/ > map_block_data.txt"
         os.system(command)
         emp_dict = {}
         paths = []
@@ -490,7 +490,7 @@ def is_exists_request_id_in_dict(request_id, dict):
 
 @app.route('/maps/<parentFolder>/<block_id>/<emp_id>/<time>', methods = ['GET'])
 def get_data_to_show_map(parentFolder, block_id, emp_id, time):
-    command = 'grep -E "\\"assigned\\"\s*\:\s*\\"1\\"" -rl ./output/' + parentFolder + "/*/" + block_id + "/ > map_data.txt"
+    command = 'grep -E "\\"assigned\\"\s*\:\s*\\"1\\"" -rl ' + baseURL + '/' +  parentFolder + "/*/" + block_id + "/ > map_data.txt"
     os.system(command)
     data = {}
     paths = []
@@ -555,7 +555,7 @@ def get_last_time_log(parentFolder):
 def get_emp_info(parentFolder, emp_id):
     result = {}
     try:
-        command = 'grep -E "\\"emp_id\\"\s*\:\s*\\"' + emp_id.strip() + '\\"" -rl ./output/' + parentFolder.strip() + "/*/*/* > emp_info_list.txt"
+        command = 'grep -E "\\"emp_id\\"\s*\:\s*\\"' + emp_id.strip() + '\\"" -rl ' + baseURL + '/' +  parentFolder.strip() + "/*/*/* > emp_info_list.txt"
         os.system(command)
         emp_info_files = []
         with open("emp_info_list.txt") as file:
@@ -605,7 +605,7 @@ def get_emp_coordinate(emp_id, resources):
     return "0,0"
 
 def is_exists_request_id(file_name, request_id, parentFolder, block_id):
-    command = 'grep -E "\\"request_id\\"\s*\:\s*\\"' + request_id + '\\"" -rl ./output/' + parentFolder + "/*/" + block_id + "/ > request_id_file.txt"
+    command = 'grep -E "\\"request_id\\"\s*\:\s*\\"' + request_id + '\\"" -rl ' + baseURL + '/' +  parentFolder + "/*/" + block_id + "/ > request_id_file.txt"
     os.system(command)
     request_id_file = []
     with open("request_id_file.txt") as file:
