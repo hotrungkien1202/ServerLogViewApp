@@ -591,12 +591,16 @@ def get_emp_info(parentFolder, emp_id):
                         logemps.log_emps.sort(key=lambda x: x.event_date_time)
                         # print(len(logemps.log_emps))
                         result = logemps.make_json()
-                        result["log_file"] = em_info_file
+                        result["log_file"] = get_file_name_only(em_info_file)
                     break
         pass
     except Exception as e:
         pass
     return result
+
+def get_file_name_only(full_path):
+    arrs = full_path.split('/')
+    return arrs[len(arrs) - 1]
 
 
 def get_emp_coordinate(emp_id, resources):
