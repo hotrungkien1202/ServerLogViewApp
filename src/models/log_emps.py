@@ -1,5 +1,5 @@
 from common.utils import *
-
+import os;
 
 def parser_special_date_time_str(str_d_time_):
     double_dot_pos = str_d_time_.strip().index(':')
@@ -54,14 +54,13 @@ class LogEmp:
         self.event_date_time = event_date_time
 
     def get_request_info(self):
-
-
         pass
 
 
 class LogEmps:
     def __init__(self, emp_id, str_log_elm, available=None, emp_coordinate=None, emp_level=None, emp_status=None,
-                 emp_task=None, performance=None, request_impossible=None, type=None, block_id=None, res_time=None, block_name=None):
+                 emp_task=None, performance=None, request_impossible=None, type=None, block_id=None, res_time=None,
+                 block_name=None):
         self.emp_id = emp_id
         self.str_log_elm = str_log_elm
         self.available = available
@@ -78,7 +77,7 @@ class LogEmps:
 
         self.log_emps = []
 
-    def make_json(self):
+    def make_json(self, baseURL, parentFolder):
         return {
             "emp_id": str(self.emp_id),
             "block_id": str(self.block_id),
@@ -92,22 +91,46 @@ class LogEmps:
             "performance": self.performance,
             "request_impossible": str(self.request_impossible),
             "type": str(self.type),
-            "event_logs": self.__make_log_list_json()
+            "event_logs": self.__make_log_list_json(baseURL, parentFolder)
         }
 
-    def __make_log_list_json(self):
+    def __make_log_list_json(self, baseURL, parentFolder):
         rs = []
         for log in self.log_emps:  # type: LogEmp
             rs.append({
-                "request": {
-                    "request_id": log.request_id,
-                    "request_type": log.request_type
-                },
+                "request": self.get_latest_request_info(baseURL, log.request_id, log.request_type, parentFolder),
                 "event_code": log.event_code,
                 "event_desc": log.event_desc,
                 "event_date_time": str(log.event_date_time)
             })
         return rs
+
+    def get_latest_request_info(self, baseURL, request_id, request_type, parentFolder):
+        # type: (str, str, str) -> object
+        result = {}
+        try:
+            command = 'grep -E "\\"request_id\\"\s*\:\s*' + request_id.strip() + '" -rl ' + baseURL + '/' + parentFolder.strip() + "/*/*/* > request_info_list.txt"
+            os.system(command)
+            rq_info_files = []
+            with open("request_info_list.txt") as file:
+                for line in file:
+                    rq_info_files.append(str(line).replace('\n', ''))
+
+            if len(rq_info_files) > 0:
+                rq_info_files.sort(reverse=True)
+                rq_info_files = rq_info_files[0]
+                # print(em_info_file)
+                content = read_json_from_file(rq_info_files)
+                inputJs = content["input"][0]
+                tasks = inputJs["tasks"]
+                for task in tasks:
+                    if str(task["request_id"]).strip().lower() == request_id.strip().lower() \
+                            and str(task["type"]).strip().lower() == request_type.strip().lower():
+                        result = task
+                        break
+        except Exception as e:
+            pass
+        return result
 
     def parser(self):
         if not is_null_or_empty(self.str_log_elm):
