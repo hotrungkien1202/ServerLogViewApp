@@ -1,13 +1,21 @@
 import datetime
+import json
+
 
 DATETIME_FORMAT = '%Y-%m-%d %H:%M:%S'
-
 
 def json_default(value):
     if isinstance(value, datetime.date):
         return str(value)
     else:
         return value.__dict__
+
+def read_json_from_file(path):
+    try:
+        with open(path) as json_file:
+            return json.load(json_file)
+    except Exception as e:
+        raise e
 
 def is_none(v):
     if v is None:
@@ -31,6 +39,7 @@ def is_null_or_empty(_str):
             return _str.strip().isspace()
         return True
     return False
+
 
 def to_date_time(str):
     datetime_object = datetime.datetime.strptime(str, DATETIME_FORMAT)
