@@ -180,7 +180,7 @@ def custom_cmp(json):
         return 0
 
 
-def get_customer_level_by_request_id(tasks, request_id):
+def get_task_info_by_request_id(tasks, request_id):
     for task in tasks:
         if int(task['request_id']) == int(request_id):
             return task['manual_priority'], 0, task['sub_type_1'], task['reason_out_case_type'], task[
@@ -203,7 +203,7 @@ def get_assigned_task_by_request_id(hcOutputData, tasks, request_id):
             rs['assigned'] = hc['assigned']
             rs['late_time'] = hc['late_time']
             rs['priority'] = hc['priority']
-            tup = get_customer_level_by_request_id(tasks, request_id)
+            tup = get_task_info_by_request_id(tasks, request_id)
             rs['manual_priority'] = tup[0]
             rs['number_of_emp'] = tup[1]
             rs['sub_type'] = tup[2]
@@ -299,110 +299,6 @@ def statistic_assigned_task_for_employee(parentFolder, time):
     except Exception as e:
         pass
     return json.dumps(result)
-
-
-@app.route('/summary_old/<parentFolder>/<time>', methods=['GET'])
-def statistic_assigned_task_for_employee_bk(parentFolder, time):
-    blocks = []
-    requests = []
-    try:
-        command = 'grep -E "\\"assigned\\"\s*\:\s*\\"1\\"" -rl ' + baseURL + '/' + parentFolder + "/ > summary_blocks_data.txt"
-        os.system(command)
-        emp_dict = {}
-        paths = []
-        with open("summary_blocks_data.txt") as file:
-            for line in file:
-                paths.append(str(line).replace('\n', ''))
-        paths.sort(reverse=True)
-
-        for path in paths:
-            backWardIdx = path.rfind('/')
-            folderPath = path[0:backWardIdx]
-            backWardIdx = folderPath.rfind('/')
-            folderPath = folderPath[0:backWardIdx]
-            folder_time = folderPath[-2:]
-            # print(path)
-            if int(folder_time) <= int(time):
-                content = read_json_from_file(path)
-                block_id = str(content["input"][0]["block_id"])
-                # if block_id == "317516":
-                # get all employees
-                emps = []
-                for emp_ in content["input"][0]["resources"]:
-                    emp = {}
-                    emp["emp_id"] = emp_["emp_id"]
-                    emp["emp_type"] = emp_["type"]
-                    emp["tasks"] = []
-                    emp["emp_assigned"] = emp_['emp_assigned']
-                    # print(emp)
-                    if not any(e["emp_id"] == emp["emp_id"] for e in emps):
-                        emps.append(emp)
-
-                # update request done for emp
-                # requests = []
-                # print(len(emps))
-                hcOutput = content["hc_output"]
-                for hc in hcOutput:
-                    rq = {}
-                    if hc["assigned"] == "1":
-                        # load_factor = hc["load_factor"]
-                        rq["request_id"] = hc["request_id"]
-                        rq["type"] = hc["type"]
-                        if not any(
-                                str(r["request_id"]) == str(hc["request_id"]) and str(r["type"]) == str(hc["type"]) for
-                                r in requests):
-                            # print(requests)
-                            requests.append(rq)
-                            for tmp_emp_id in emps:
-                                file_name = path.strip().split("/")[6]
-                                if tmp_emp_id["emp_id"] == hc["emp_id"] and not is_exists_request_id(file_name,
-                                                                                                     hc["request_id"],
-                                                                                                     parentFolder,
-                                                                                                     block_id):
-                                    if str(hc["request_id"]) not in tmp_emp_id["tasks"]:
-                                        tmp_emp_id["tasks"].append(str(hc["request_id"]))
-                                    break
-                # print(len(emps))
-                # print(emps)
-                # get load_factor
-                load_factor = get_load_factor(parentFolder, block_id, folder_time)
-
-                if any(x["block_id"] == str(block_id) for x in blocks):
-                    for b in blocks:
-                        if b["block_id"] == str(block_id):
-                            for new_emp in emps:
-                                if not any(new_emp["emp_id"] == r["emp_id"] for r in b["employees"]):
-                                    b["employees"].append(new_emp)
-                                else:
-                                    for old_emp in b["employees"]:
-                                        for new_emp in emps:
-                                            if old_emp["emp_id"] == new_emp["emp_id"]:
-                                                old_emp["tasks"] = list(set(old_emp["tasks"] + new_emp["tasks"]))
-                                                break
-                else:
-                    block = {}
-                    block["block_id"] = str(block_id)
-                    block["employees"] = emps
-                    block["block_name"] = content["input"][0]["block_name"]
-                    block["load_factor"] = load_factor
-                    block["capacity"] = 0
-                    blocks.append(block)
-
-        blocks.sort(key=lambda x: x['block_id'])
-        for b_ in blocks:
-            capacity = 0
-            for e_ in b_["employees"]:
-                e_["emp_assigned"] = len(e_["tasks"])
-                capacity += int(e_["emp_assigned"])
-            b_["capacity"] = "%.2f" % (capacity / float(len(b_["employees"])))
-            b_["employees"].sort(key=lambda x: x["emp_assigned"], reverse=True)
-
-        blocks.sort(key=lambda x: x['block_name'])
-
-    except Exception as e:
-        raise e
-    return json.dumps(blocks)
-
 
 def get_load_factor(parentFolder, block_id, time):
     load_factor = 0
@@ -542,7 +438,7 @@ def get_data_to_show_map(parentFolder, block_id, emp_id, time):
                     obj["emp_coordinate"] = get_emp_coordinate(emp_id, resources)
                     obj["start_time"] = get_hour_and_minute_in_time(hc["start_time"])
                     obj["checkout_time"] = get_hour_and_minute_in_time(hc["checkout_time"])
-                    tup = get_customer_level_by_request_id(tasks, hc["request_id"])
+                    tup = get_task_info_by_request_id(tasks, hc["request_id"])
                     obj["appointmentdate"] = get_hour_and_minute_in_time(tup[4])
                     checkout_time = datetime.datetime.strptime(hc["checkout_time"], '%Y-%m-%d %H:%M:%S')
                     apdate = datetime.datetime.strptime(tup[4], '%Y-%m-%d %H:%M:%S')
@@ -621,6 +517,31 @@ def get_emp_info(parentFolder, emp_id):
         pass
     return result
 
+@app.route('/task_info/<parentFolder>/<request_id>/<file_name>', methods=['GET'])
+def get_task_info(parentFolder, request_id, file_name):
+    name = file_name.split(".")[0]
+    file_time = name.split("_")[3][0:2]
+    file_block = name.split("_")[4]
+    path = baseURL + "/" + parentFolder + "/" + file_time + "/" + file_block + "/" + file_name
+    task = {}
+    try:
+        file_content = read_json_from_file(path)
+        inputJs = file_content["input"][0]
+        tasks = inputJs["tasks"]
+        tmp = get_task_info_by_request_id(tasks, request_id)
+        task['request_id'] = request_id
+        task['manual_priority'] = tmp[0]
+        task['sub_type_1'] = tmp[2]
+        task['reason_out_case_type'] = tmp[3] 
+        task['appointmentdate'] = tmp[4] 
+        task['sub_type_2'] = tmp[5] 
+        task['emp_speciallized'] = tmp[6] 
+        task['contract'] = tmp[7] 
+        task["date_confirmed"] = tmp[8] 
+        task['appointmentdate2'] = tmp[9]
+    except Exception as e:
+        pass
+    return json.dumps(task)
 
 def get_file_name_only(full_path):
     arrs = full_path.split('/')
