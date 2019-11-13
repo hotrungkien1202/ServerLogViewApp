@@ -530,15 +530,15 @@ def get_task_info(parentFolder, request_id, file_name):
         tasks = inputJs["tasks"]
         tmp = get_task_info_by_request_id(tasks, request_id)
         task['request_id'] = request_id
-        task['manual_priority'] = tmp[0]
-        task['sub_type_1'] = tmp[2]
-        task['reason_out_case_type'] = tmp[3] 
-        task['appointmentdate'] = tmp[4] 
-        task['sub_type_2'] = tmp[5] 
+        task['priority'] = tmp[0]
+        task['sub_type'] = tmp[2]
+        task['reason_outcase'] = tmp[3] 
+        task['appoiment_date'] = tmp[4] 
+        task['sub_type2'] = tmp[5] 
         task['emp_speciallized'] = tmp[6] 
         task['contract'] = tmp[7] 
         task["date_confirmed"] = tmp[8] 
-        task['appointmentdate2'] = tmp[9]
+        task['appoiment_date2'] = tmp[9]
     except Exception as e:
         pass
     return json.dumps(task)
