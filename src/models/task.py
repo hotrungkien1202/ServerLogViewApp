@@ -1,5 +1,5 @@
 class Task:
-    def __init__(self, request_id, type, sub_type_1, sub_type_2, reason_out_case, appointmentdate, manual_priority, emp_speciallized, contract):
+    def __init__(self, request_id, type, sub_type_1, sub_type_2, reason_out_case, appointmentdate, manual_priority, emp_speciallized, contract, date_confirmed):
         self.request_id = request_id
         self.type = type
         self.sub_type_1 = sub_type_1
@@ -9,16 +9,17 @@ class Task:
         self.manual_priority = manual_priority
         self.emp_speciallized = emp_speciallized
         self.contract = contract
+        self.date_confirmed = date_confirmed
 
 
 class AssignedTask(Task):
-    def __init__(self,request_id, type, sub_type_1, sub_type_2, reason_out_case, appointmentdate, manual_priority, emp_speciallized, contract, start_time, checkin_time, checkout_time, priority, late_time, assigned):
+    def __init__(self,request_id, type, sub_type_1, sub_type_2, reason_out_case, appointmentdate, manual_priority, emp_speciallized, contract, date_confirmed, start_time, checkin_time, checkout_time, priority, late_time, assigned):
         self.start_time = start_time
         self.checkin_time = checkin_time
         self.checkout_time  = checkout_time
         self.priority = priority
         self.late_time = late_time
         self.assigned = assigned
-        Task.__init__(self, request_id, type, sub_type_1, sub_type_2, reason_out_case, appointmentdate, manual_priority, emp_speciallized, contract)
+        Task.__init__(self, request_id, type, sub_type_1, sub_type_2, reason_out_case, appointmentdate, manual_priority, emp_speciallized, contract, date_confirmed)
 
 

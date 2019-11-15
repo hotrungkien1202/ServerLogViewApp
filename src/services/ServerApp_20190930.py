@@ -97,11 +97,11 @@ def get_blocks(parentFolder, time):
             data = read_json_from_file(path)
             input_ = data['input'][0]
             b = Block(input_.get('block_id', ''), input_.get('block_name', ''), input_.get('block_distance', ''), input_.get('block_ability', ''), data.get('version', ''))
-            if not any(r.block_id == b.block_id for r in result):
+            if not any(r['block_id'] == b.block_id for r in result):
                 result.append(b.__dict__)
-        result.sort(key=lambda x: x.block_name)
+        result.sort(key=lambda x: x['block_name'])
     except Exception as e:
-        pass
+        print(e)
     return json.dumps(result)
 
 
@@ -170,7 +170,7 @@ def custom_cmp(json):
 def get_task_info_by_request_id(tasks, request_id):
     for task in tasks:
         if int(task['request_id']) == int(request_id):
-            return Task(task.get('request_id', ''), task.get('type', ''), task.get('sub_type_1', ''), task.get('sub_type_2', ''),task.get('reason_out_case', ''), task.get('appointmentdate', ''), task.get('manual_priority', ''), task.get('emp_speciallized', ''), task.get('contract', ''))
+            return Task(task.get('request_id', ''), task.get('type', ''), task.get('sub_type_1', ''), task.get('sub_type_2', ''),task.get('reason_out_case', ''), task.get('appointmentdate', ''), task.get('manual_priority', ''), task.get('emp_speciallized', ''), task.get('contract', ''), task.get('date_confirmed', 0))
     return None
 
 
@@ -180,7 +180,7 @@ def get_assigned_task_by_request_id(hcOutputData, tasks, request_id):
         if int(hc["request_id"]) == int(request_id):
             # print("exists")
             task = get_task_info_by_request_id(tasks, request_id)
-            return AssignedTask(task.request_id, task.type, task.sub_type_1, task.sub_type_2, task.reason_out_case, task.appointmentdate, task.manual_priority, task.emp_speciallized, task.contract,
+            return AssignedTask(task.request_id, task.type, task.sub_type_1, task.sub_type_2, task.reason_out_case, task.appointmentdate, task.manual_priority, task.emp_speciallized, task.contract,task.date_confirmed,
                                 hc.get('start_time', ''), hc.get('checkin_time', ''), hc.get('checkout_time', ''), hc.get('priority', ''), hc.get('late_time', ''), hc.get('assigned', ''))
     return None
 
@@ -373,11 +373,11 @@ def get_data_to_show_map(parentFolder, block_id, emp_id, time):
                     obj["emp_coordinate"] = get_emp_coordinate(emp_id, resources)
                     obj["start_time"] = get_hour_and_minute_in_time(hc["start_time"])
                     obj["checkout_time"] = get_hour_and_minute_in_time(hc["checkout_time"])
-                    tup = get_task_info_by_request_id(tasks, hc["request_id"])
-                    obj["appointmentdate"] = get_hour_and_minute_in_time(tup[4])
+                    task = get_task_info_by_request_id(tasks, hc["request_id"])
+                    obj["appointmentdate"] = get_hour_and_minute_in_time(task.appointmentdate)
                     checkout_time = datetime.datetime.strptime(hc["checkout_time"], '%Y-%m-%d %H:%M:%S')
-                    apdate = datetime.datetime.strptime(tup[4], '%Y-%m-%d %H:%M:%S')
-                    obj["late_time"] = calculate_kpi_hen_fr_now(checkout_time, hc["type"], apdate, tup[8])
+                    apdate = datetime.datetime.strptime(task.appointmentdate, '%Y-%m-%d %H:%M:%S')
+                    obj["late_time"] = calculate_kpi_hen_fr_now(checkout_time, hc["type"], apdate, task.date_confirmed)
                     # print(obj["res_time"])
                     data[hc["request_id"]] = obj
     result = []
