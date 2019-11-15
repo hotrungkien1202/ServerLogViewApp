@@ -8,7 +8,9 @@ import tornado.httpserver
 import tornado.ioloop
 from common.utils import *
 from models.log_emps import *
-
+from models.task import *
+from models.employee import *
+from models.block import *
 app = Flask(__name__)
 CORS(app)
 baseURL = "./services/output"
@@ -92,19 +94,14 @@ def get_blocks(parentFolder, time):
             filenames = os.listdir(baseURL + "/" + parentFolder + "/" + time + "/" + block)
             filename = max(filenames)
             path = baseURL + "/" + parentFolder + "/" + time + "/" + block + "/" + filename
-            b = {}
             data = read_json_from_file(path)
             input_ = data['input'][0]
-            b['block_id'] = input_.get('block_id', '')
-            b['block_name'] = input_.get('block_name', '')
-            b['block_distance'] = input_.get('block_distance', '')
-            b['block_ability'] = input_.get('block_ability', '')
-            b['version'] = data['version']
-            if not any(r['block_id'] == b['block_id'] for r in result):
-                result.append(b)
-        result.sort(key=lambda x: x['block_name'])
+            b = Block(input_.get('block_id', ''), input_.get('block_name', ''), input_.get('block_distance', ''), input_.get('block_ability', ''), data.get('version', ''))
+            if not any(r.block_id == b.block_id for r in result):
+                result.append(b.__dict__)
+        result.sort(key=lambda x: x.block_name)
     except Exception as e:
-        raise e
+        pass
     return json.dumps(result)
 
 
@@ -131,38 +128,28 @@ def get_log_content(parentFolder, filename):
             if len(hc['request_id']) > 1:
                 if hc['emp_id'] != "0":
                     if hc["emp_id"] in resuslt:
+                        assigned_task = get_assigned_task_by_request_id(hcOutputData, tasks, hc['request_id'])
                         resuslt[hc["emp_id"]]['tasks'].append(
-                            get_assigned_task_by_request_id(hcOutputData, tasks, hc['request_id']))
+                            assigned_task.__dict__)
                     else:
                         employee = get_employee_by_emp_id(resources, hc['emp_id'])
-                        employee['tasks'] = [get_assigned_task_by_request_id(hcOutputData, tasks, hc['request_id'])]
-                        resuslt[hc["emp_id"]] = employee
+                        obj = employee.__dict__
+                        obj['tasks'] = [get_assigned_task_by_request_id(hcOutputData, tasks, hc['request_id']).__dict__]
+                        resuslt[hc["emp_id"]] = obj
                 else:
-                    employee = {}
-                    employee['emp_id'] = ""
-                    employee['emp_available'] = ""
-                    employee['emp_type'] = ""
-                    employee['emp_rank'] = ""
-                    employee['emp_level'] = ""
-                    employee['emp_status'] = ""
-                    employee['emp_assigned'] = ""
-                    employee['tasks'] = [get_assigned_task_by_request_id(hcOutputData, tasks, hc['request_id'])]
-                    resuslt[str(index)] = employee
+                    employee = Employee('', '', '', '', '', 0)
+                    obj = employee.__dict__
+                    obj['tasks'] = [get_assigned_task_by_request_id(hcOutputData, tasks, hc['request_id']).__dict__]
+                    resuslt[str(index)] = obj
                     index += 1
     except Exception as e:
-        pass
+        print(e)
     for resource in resources:
         if resource['emp_id'] not in resuslt:
-            employee = {}
-            employee['emp_id'] = resource['emp_id']
-            employee['emp_available'] = resource['available']
-            employee['emp_type'] = resource['type']
-            # employee['emp_rank'] = resource['rank']
-            employee['emp_level'] = resource['emp_level']
-            employee['emp_status'] = resource['emp_status']
-            employee['emp_assigned'] = resource.get('emp_assigned', 0)
-            employee['tasks'] = []
-            resuslt[resource['emp_id']] = employee
+            employee = Employee(resource.get('emp_id', ''), resource.get('available', ''), resource.get('type', ''), resource.get('emp_level', ''), resource.get('emp_status', ''), resource.get('emp_assigned', 0))
+            obj = employee.__dict__
+            obj['tasks'] = []
+            resuslt[resource['emp_id']] = obj
     rs = []
     for x in resuslt.values():
         rs.append(x)
@@ -183,51 +170,25 @@ def custom_cmp(json):
 def get_task_info_by_request_id(tasks, request_id):
     for task in tasks:
         if int(task['request_id']) == int(request_id):
-            return task['manual_priority'], 0, task['sub_type_1'], task['reason_out_case_type'], task[
-                'appointmentdate'], task['sub_type_2'], task['emp_speciallized'], task['contract'], task[
-                       "date_confirmed"], task['appointmentdate2']
-    return 0, 0, 0, 0, 0, 0, 0
+            return Task(task.get('request_id', ''), task.get('type', ''), task.get('sub_type_1', ''), task.get('sub_type_2', ''),task.get('reason_out_case', ''), task.get('appointmentdate', ''), task.get('manual_priority', ''), task.get('emp_speciallized', ''))
+    return None
 
 
 def get_assigned_task_by_request_id(hcOutputData, tasks, request_id):
-    # print(request_id)
-    rs = {}
+
     for hc in hcOutputData:
         if int(hc["request_id"]) == int(request_id):
             # print("exists")
-            rs['request_id'] = hc["request_id"]
-            rs['start_time'] = hc['start_time']
-            rs['checkin_time'] = hc['checkin_time']
-            rs['checkout_time'] = hc['checkout_time']
-            rs['task_type'] = hc['type']
-            rs['assigned'] = hc['assigned']
-            rs['late_time'] = hc['late_time']
-            rs['priority'] = hc['priority']
-            tup = get_task_info_by_request_id(tasks, request_id)
-            rs['manual_priority'] = tup[0]
-            rs['number_of_emp'] = tup[1]
-            rs['sub_type'] = tup[2]
-            rs['reason_outcase'] = tup[3]
-            rs['appoiment_date'] = tup[4]
-            rs['sub_type2'] = tup[5]
-            rs['emp_speciallized'] = tup[6]
-            rs['contract'] = tup[7]
-            rs['appoiment_date2'] = tup[9]
-    return rs
-
+            task = get_task_info_by_request_id(tasks, request_id)
+            return AssignedTask(task.request_id, task.type, task.sub_type_1, task.sub_type_2, task.reason_out_case, task.appointmentdate, task.manual_priority, task.emp_speciallized,
+                                hc.get('start_time', ''), hc.get('checkin_time', ''), hc.get('checkout_time', ''), hc.get('priority', ''), hc.get('late_time', ''), hc.get('assigned', ''))
+    return None
 
 def get_employee_by_emp_id(resources, emp_id):
-    employee = {}
     for resource in resources:
         if resource["emp_id"] == emp_id:
-            employee['emp_id'] = resource['emp_id']
-            employee['emp_available'] = resource['available']
-            employee['emp_type'] = resource['type']
-            # employee['emp_rank'] = resource['rank']
-            employee['emp_level'] = resource['emp_level']
-            employee['emp_status'] = resource['emp_status']
-            employee['emp_assigned'] = resource.get('emp_assigned', 0)
-    return employee
+            return Employee(resource.get('emp_id', ''), resource.get('available', ''), resource.get('type', ''), resource.get('emp_level', ''), resource.get('emp_status', ''), resource.get('emp_assigned', 0))
+    return None
 
 
 @app.route('/download/<parentFolder>/<filename>', methods=['GET'])
@@ -318,32 +279,6 @@ def get_load_factor(parentFolder, block_id, time):
         pass
     return load_factor
 
-
-def count_assigned_task_emp(emp_id, parentFolder, block_id, time):
-    command = 'grep -E "\\"assigned\\"\s*\:\s*\\"1\\"" -rl ' + baseURL + '/' + parentFolder + "/" + time + "/" + block_id + "/ > assigned_task_emp.txt"
-    os.system(command)
-    paths = []
-    with open("assigned_task_emp.txt") as file:
-        for line in file:
-            paths.append(str(line).replace('\n', ''))
-    paths.sort()
-    result = []
-    for path in paths:
-        content = read_json_from_file(path)
-        hcOutput = content["hc_output"]
-        inputJs = content["input"][0]
-        for hc in hcOutput:
-            if int(hc["assigned"]) == 1:
-                if hc["request_id"] in result:
-                    result.remove(hc["request_id"])
-                file_name = path.strip().split("/")[6]
-                if hc["emp_id"] == emp_id and not is_exists_request_id(file_name, hc["request_id"], parentFolder,
-                                                                       block_id):
-                    result.append(hc["request_id"])
-
-    return len(result)
-
-
 @app.route('/map_block_time/<parentFolder>/<time>/<block_id>', methods=['GET'])
 def get_data_to_show_block_map(parentFolder, time, block_id):
     try:
@@ -373,7 +308,7 @@ def get_data_to_show_block_map(parentFolder, time, block_id):
                 inputJs = content["input"][0]
                 for hc in hcOutput:
                     if int(hc["assigned"]) == 1:
-                        file_name = path.strip().split("/")[6]
+                        file_name = get_file_name_only(path)
                         if not is_exists_request_id(file_name, hc["request_id"], parentFolder, block_id):
                             obj = {}
                             obj["emp_id"] = hc["emp_id"]
@@ -415,7 +350,7 @@ def get_data_to_show_map(parentFolder, block_id, emp_id, time):
             paths.append(str(line).replace('\n', ''))
     paths.sort()
     for path in paths:
-        file_name = path.strip().split("/")[6]
+        file_name = get_file_name_only(path)
         file_time = file_name.strip().split("_")[3][0:2]
         if int(file_time) > int(time):
             break
@@ -522,26 +457,24 @@ def get_task_info(parentFolder, request_id, file_name):
     name = file_name.split(".")[0]
     file_time = name.split("_")[3][0:2]
     file_block = name.split("_")[4]
-    path = baseURL + "/" + parentFolder + "/" + file_time + "/" + file_block + "/" + file_name
-    task = {}
+    command = 'grep -E "\\"request_id\\"\s*\:\s*\\"' + request_id + '\\"" -rl ' + baseURL + '/' + parentFolder.strip() + "/*/" + file_block + "/ > search_file_by_request.txt"
+    os.system(command)
+    request_id_file = []
+    with open("search_file_by_request.txt") as file:
+        for line in file:
+            request_id_file.append(str(line).replace('\n', ''))
+    # task = Task()
+    path = request_id_file[0]
     try:
         file_content = read_json_from_file(path)
         inputJs = file_content["input"][0]
         tasks = inputJs["tasks"]
-        tmp = get_task_info_by_request_id(tasks, request_id)
-        task['request_id'] = request_id
-        task['priority'] = tmp[0]
-        task['sub_type'] = tmp[2]
-        task['reason_outcase'] = tmp[3] 
-        task['appoiment_date'] = tmp[4] 
-        task['sub_type2'] = tmp[5] 
-        task['emp_speciallized'] = tmp[6] 
-        task['contract'] = tmp[7] 
-        task["date_confirmed"] = tmp[8] 
-        task['appoiment_date2'] = tmp[9]
+        task = get_task_info_by_request_id(tasks, request_id)
+        return json.dumps(task.__dict__)
+
     except Exception as e:
-        pass
-    return json.dumps(task)
+        raise e
+    return json.dumps(None)
 
 def get_file_name_only(full_path):
     arrs = full_path.split('/')
