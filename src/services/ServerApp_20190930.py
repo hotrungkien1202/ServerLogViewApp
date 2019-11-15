@@ -170,7 +170,7 @@ def custom_cmp(json):
 def get_task_info_by_request_id(tasks, request_id):
     for task in tasks:
         if int(task['request_id']) == int(request_id):
-            return Task(task.get('request_id', ''), task.get('type', ''), task.get('sub_type_1', ''), task.get('sub_type_2', ''),task.get('reason_out_case', ''), task.get('appointmentdate', ''), task.get('manual_priority', ''), task.get('emp_speciallized', ''))
+            return Task(task.get('request_id', ''), task.get('type', ''), task.get('sub_type_1', ''), task.get('sub_type_2', ''),task.get('reason_out_case', ''), task.get('appointmentdate', ''), task.get('manual_priority', ''), task.get('emp_speciallized', ''), task.get('contract', ''))
     return None
 
 
@@ -180,7 +180,7 @@ def get_assigned_task_by_request_id(hcOutputData, tasks, request_id):
         if int(hc["request_id"]) == int(request_id):
             # print("exists")
             task = get_task_info_by_request_id(tasks, request_id)
-            return AssignedTask(task.request_id, task.type, task.sub_type_1, task.sub_type_2, task.reason_out_case, task.appointmentdate, task.manual_priority, task.emp_speciallized,
+            return AssignedTask(task.request_id, task.type, task.sub_type_1, task.sub_type_2, task.reason_out_case, task.appointmentdate, task.manual_priority, task.emp_speciallized, task.contract,
                                 hc.get('start_time', ''), hc.get('checkin_time', ''), hc.get('checkout_time', ''), hc.get('priority', ''), hc.get('late_time', ''), hc.get('assigned', ''))
     return None
 
