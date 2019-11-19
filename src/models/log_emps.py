@@ -34,10 +34,10 @@ class Events:
     # 6: Checkout (hoan tat)
     # 7: Recall
     ASSIGNED_TASK = {'code': '1', 'desc': 'Assigned task'}
-    ACCEPT_TASK = {'code': '2', 'desc': 'Accept task'}
-    OUT_CASE = {'code': '3', 'desc': 'Out case'}
+    ACCEPT_TASK = {'code': '2', 'desc': 'Accepted task'}
+    OUT_CASE = {'code': '3', 'desc': 'Rejected task'}
     CHECK_IN = {'code': '4', 'desc': 'Check in'}
-    MORNITORING = {'code': '5', 'desc': 'Out case'}
+    MORNITORING = {'code': '5', 'desc': 'Monitoring'}
     CHECK_OUT = {'code': '6', 'desc': 'Check out'}
     RE_CALL = {'code': '7', 'desc': 'Re-call'}
 
@@ -130,6 +130,12 @@ class LogEmps:
                         break
         except Exception as e:
             pass
+        if len(result) == 0:
+            result = {
+                "request_id": request_id,
+                "contract": "N/A",
+                "type": request_type
+            }
         return result
 
     def parser(self):
