@@ -115,7 +115,6 @@ def get_log_content(parentFolder, filename):
     tasks_dict = {}
     try:
         data_file = read_json_from_file(path)
-        tasks_dict = read_json_from_file(tasks_log_path)
         input = data_file['input'][0]
         if not isinstance(data_file['hc_output'][0], (list,)):
             hcOutputData = data_file['hc_output']
@@ -149,13 +148,14 @@ def get_log_content(parentFolder, filename):
         print(e)
 
     for resource in resources:
-        print(resource['emp_id'].strip())
+        #print(resource['emp_id'].strip())
         employee = Employee(resource.get('emp_id', ''), resource.get('available', ''), resource.get('type', ''), resource.get('emp_level', ''), resource.get('emp_status', ''), resource.get('emp_assigned', 0))
         obj = employee.__dict__
         # parser log_emp, and get tasks history
         logemp_str = resource.get('logemp', '')
         history_tasks = []
         try:
+            tasks_dict = read_json_from_file(tasks_log_path)
             if not is_null_or_empty(logemp_str):
                 logemp_str = logemp_str.strip()
                 #print(logemp_str)
