@@ -14,7 +14,7 @@ from models.block import *
 app = Flask(__name__)
 CORS(app)
 baseURL = "./services/output"
-
+tasksLogBaseURL = "./services/history_tasks"
 
 @app.route('/block_all/<parentFolder>/<time>', methods=['GET'])
 def get_all_blocks_data(parentFolder, time):
@@ -111,8 +111,11 @@ def get_log_content(parentFolder, filename):
     file_time = name.split("_")[3][0:2]
     file_block = name.split("_")[4]
     path = baseURL + "/" + parentFolder + "/" + file_time + "/" + file_block + "/" + filename
+    tasks_log_path = tasksLogBaseURL + '/' + parentFolder + '.json'
+    tasks_dict = {}
     try:
         data_file = read_json_from_file(path)
+        tasks_dict = read_json_from_file(tasks_log_path)
         input = data_file['input'][0]
         if not isinstance(data_file['hc_output'][0], (list,)):
             hcOutputData = data_file['hc_output']
@@ -144,12 +147,45 @@ def get_log_content(parentFolder, filename):
                     index += 1
     except Exception as e:
         print(e)
+
     for resource in resources:
+        print(resource['emp_id'].strip())
+        employee = Employee(resource.get('emp_id', ''), resource.get('available', ''), resource.get('type', ''), resource.get('emp_level', ''), resource.get('emp_status', ''), resource.get('emp_assigned', 0))
+        obj = employee.__dict__
+        # parser log_emp, and get tasks history
+        logemp_str = resource.get('logemp', '')
+        history_tasks = []
+        if not is_null_or_empty(logemp_str):
+            logemp_str = logemp_str.strip()
+            #print(logemp_str)
+            if not is_null_or_empty(logemp_str):
+                logemps = LogEmps(resource['emp_id'].strip(), logemp_str)
+                logemps.parser()
+                logemps.log_emps.sort(key=lambda x: x.event_date_time)
+                for le in logemps.log_emps:  # type: LogEmp
+                    if le.event_code == Events.OUT_CASE['code'] or le.event_code == Events.CHECK_OUT['code']:
+                        unique_id = '%s_%s'%(le.request_id, le.request_type)
+                        if unique_id in tasks_dict:
+                            t = tasks_dict[unique_id]
+                            his_t = AssignedTask(t["request_id"], t['type'], t['sub_type_1'], t['sub_type_2'],
+                                         t['reason_out_case_type'], t['appointmentdate'], t['manual_priority'],
+                                         t['emp_speciallized'], t['contract'], t['date_confirmed'],
+                                         t.get('start_time', ''), t.get('checkin_time', ''),
+                                         t.get('checkout_time', ''), t.get('priority', ''), t.get('late_time', ''),
+                                         t.get('assigned', ''))
+                            task_obj = his_t.__dict__
+                            task_obj['is_history_task'] = "1"
+                            history_tasks.append(task_obj)
+                            print("his task %s: " % task_obj['request_id'])
+                            #print(json.dumps(task_info, indent=4))
         if resource['emp_id'] not in resuslt:
-            employee = Employee(resource.get('emp_id', ''), resource.get('available', ''), resource.get('type', ''), resource.get('emp_level', ''), resource.get('emp_status', ''), resource.get('emp_assigned', 0))
-            obj = employee.__dict__
-            obj['tasks'] = []
+            obj['tasks'] = history_tasks
             resuslt[resource['emp_id']] = obj
+        else:
+            __employee = resuslt[resource['emp_id']]
+            __employee['tasks'] += history_tasks
+            resuslt[resource['emp_id']] = __employee
+
     rs = []
     for x in resuslt.values():
         rs.append(x)
