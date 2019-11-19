@@ -147,6 +147,11 @@ def get_log_content(parentFolder, filename):
     except Exception as e:
         print(e)
 
+    try:
+        tasks_dict = read_json_from_file(tasks_log_path)
+    except Exception as e:
+        print(e)
+
     for resource in resources:
         #print(resource['emp_id'].strip())
         employee = Employee(resource.get('emp_id', ''), resource.get('available', ''), resource.get('type', ''), resource.get('emp_level', ''), resource.get('emp_status', ''), resource.get('emp_assigned', 0))
@@ -155,7 +160,6 @@ def get_log_content(parentFolder, filename):
         logemp_str = resource.get('logemp', '')
         history_tasks = []
         try:
-            tasks_dict = read_json_from_file(tasks_log_path)
             if not is_null_or_empty(logemp_str):
                 logemp_str = logemp_str.strip()
                 #print(logemp_str)
@@ -186,7 +190,7 @@ def get_log_content(parentFolder, filename):
             resuslt[resource['emp_id']] = obj
         else:
             __employee = resuslt[resource['emp_id']]
-            __employee['tasks'] += history_tasks
+            __employee['tasks'] = history_tasks + __employee['tasks']
             resuslt[resource['emp_id']] = __employee
 
     rs = []
