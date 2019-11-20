@@ -111,8 +111,14 @@ def get_log_content(parentFolder, filename):
     file_time = name.split("_")[3][0:2]
     file_block = name.split("_")[4]
     path = baseURL + "/" + parentFolder + "/" + file_time + "/" + file_block + "/" + filename
-    tasks_log_path = tasksLogBaseURL + '/' + parentFolder + '.json'
+    tasks_log_path = tasksLogBaseURL + '/' + parentFolder + "/"  + file_block + '.json'
     tasks_dict = {}
+    resources = []
+    tasks = []
+    resuslt = {}
+    index = 1
+    load_factor = ""
+
     try:
         data_file = read_json_from_file(path)
         input = data_file['input'][0]
@@ -122,9 +128,7 @@ def get_log_content(parentFolder, filename):
             hcOutputData = data_file['hc_output'][0]
         tasks = input['tasks']
         resources = input['resources']
-        index = 1
-        load_factor = ""
-        resuslt = {}
+
         for hc in hcOutputData:
             # print("for1 ", hc["request_id"])
             if len(hc['request_id']) > 1:
@@ -168,7 +172,7 @@ def get_log_content(parentFolder, filename):
                     logemps.parser()
                     logemps.log_emps.sort(key=lambda x: x.event_date_time)
                     for le in logemps.log_emps:  # type: LogEmp
-                        if le.event_code == Events.OUT_CASE['code'] or le.event_code == Events.CHECK_OUT['code']:
+                        if le.event_code == Events.CHECK_OUT['code']:
                             unique_id = '%s_%s'%(le.request_id, le.request_type)
                             if unique_id in tasks_dict:
                                 t = tasks_dict[unique_id]
