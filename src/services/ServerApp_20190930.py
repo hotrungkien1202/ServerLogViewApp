@@ -187,7 +187,7 @@ def get_log_content(parentFolder, filename):
                                 history_tasks.append(task_obj)
                                 #print("his task %s: " % task_obj['request_id'])
                                 #print(json.dumps(task_info, indent=4))
-            history_tasks.sort(key=lambda x:x["start_time"])
+            history_tasks.sort(key=lambda x:x["checkin_time"])
         except Exception as ex:
             pass
         if resource['emp_id'] not in resuslt:
