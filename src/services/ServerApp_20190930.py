@@ -32,7 +32,7 @@ def get_all_blocks_data(parentFolder, time):
             input_ = data['input'][0]
             hc_output_ = data['hc_output']
             b['block_id'] = input_['block_id']
-            b['block_name'] = input_['block_name']
+            b['block_name'] = input_.get('block_name','')
             b['block_distance'] = input_['block_distance']
             b['block_center'] = input_['block_center']
             b['version'] = data['version']
@@ -187,6 +187,7 @@ def get_log_content(parentFolder, filename):
                                 history_tasks.append(task_obj)
                                 #print("his task %s: " % task_obj['request_id'])
                                 #print(json.dumps(task_info, indent=4))
+            history_tasks.sort(key=lambda x:x["start_time"])
         except Exception as ex:
             pass
         if resource['emp_id'] not in resuslt:
@@ -296,7 +297,7 @@ def statistic_assigned_task_for_employee(parentFolder, time):
             # print(employees)
             employees.sort(key=lambda x: x["emp_assigned"], reverse=True)
             obj["block_id"] = data["input"][0]["block_id"]
-            obj["block_name"] = data["input"][0]["block_name"]
+            obj["block_name"] = data["input"][0].get("block_name",'')
             obj["block_center"] = data["input"][0]["block_center"]
             obj["block_distance"] = data["input"][0]["block_distance"]
             obj["employees"] = employees
