@@ -15,6 +15,7 @@ app = Flask(__name__)
 CORS(app)
 baseURL = "./services/output"
 tasksLogBaseURL = "./services/history_tasks"
+empsLogBaseURL = "./services/history_emps"
 
 @app.route('/block_all/<parentFolder>/<time>', methods=['GET'])
 def get_all_blocks_data(parentFolder, time):
@@ -32,7 +33,7 @@ def get_all_blocks_data(parentFolder, time):
             input_ = data['input'][0]
             hc_output_ = data['hc_output']
             b['block_id'] = input_['block_id']
-            b['block_name'] = input_['block_name']
+            b['block_name'] = input_.get('block_name', '')
             b['block_distance'] = input_['block_distance']
             b['block_center'] = input_['block_center']
             b['version'] = data['version']
@@ -296,7 +297,7 @@ def statistic_assigned_task_for_employee(parentFolder, time):
             # print(employees)
             employees.sort(key=lambda x: x["emp_assigned"], reverse=True)
             obj["block_id"] = data["input"][0]["block_id"]
-            obj["block_name"] = data["input"][0]["block_name"]
+            obj["block_name"] = data["input"][0].get("block_name",'')
             obj["block_center"] = data["input"][0]["block_center"]
             obj["block_distance"] = data["input"][0]["block_distance"]
             obj["employees"] = employees
@@ -522,6 +523,24 @@ def get_task_info(parentFolder, request_id, file_name):
     except Exception as e:
         raise e
     return json.dumps(None)
+
+@app.route('/count_emp/<parentFolder>', methods=['GET'])
+def count_total_employee(parentFolder):
+    obj = '0_0'
+    try:
+        path = empsLogBaseURL + "/" + parentFolder + "/";
+        files = os.listdir(path)
+        count_emp = 0;
+        count_tasks = 0;
+        for file in files:
+            emp_dict = read_json_from_file(path + "/" + file)
+            count_emp += len(emp_dict)
+            for key in emp_dict:
+                count_tasks += emp_dict[key]['emp_assigned']
+        obj = '%s_%s'%(count_emp, count_tasks)
+    except Exception as e:
+        pass
+    return json.dumps(obj)
 
 def get_file_name_only(full_path):
     arrs = full_path.split('/')
