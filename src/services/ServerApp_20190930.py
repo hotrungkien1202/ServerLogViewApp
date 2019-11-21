@@ -171,11 +171,13 @@ def get_log_content(parentFolder, filename):
                 if not is_null_or_empty(logemp_str):
                     logemps = LogEmps(resource['emp_id'].strip(), logemp_str)
                     logemps.parser()
-                    logemps.log_emps.sort(key=lambda x: x.event_date_time)
+                    logemps.log_emps.sort(key=lambda x: x.request_id)
+                    #print("%s - hist length: %s" % (resource['emp_id'], len(logemps.log_emps)))
                     for le in logemps.log_emps:  # type: LogEmp
                         if le.event_code == Events.CHECK_OUT['code']:
                             unique_id = '%s_%s'%(le.request_id, le.request_type)
                             if unique_id in tasks_dict:
+                                # print("in task_dict: %s" % unique_id)
                                 t = tasks_dict[unique_id]
                                 his_t = AssignedTask(t["request_id"], t['type'], t['sub_type_1'], t['sub_type_2'],
                                              t['reason_out_case_type'], t['appointmentdate'], t['manual_priority'],
@@ -188,6 +190,8 @@ def get_log_content(parentFolder, filename):
                                 history_tasks.append(task_obj)
                                 #print("his task %s: " % task_obj['request_id'])
                                 #print(json.dumps(task_info, indent=4))
+                            # else:
+                            #     print("not in task_dict: %s" % unique_id)
         except Exception as ex:
             pass
         if resource['emp_id'] not in resuslt:
