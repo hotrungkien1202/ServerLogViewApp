@@ -192,6 +192,7 @@ def get_log_content(parentFolder, filename):
                                 #print(json.dumps(task_info, indent=4))
                             # else:
                             #     print("not in task_dict: %s" % unique_id)
+                    history_tasks.sort(key=lambda x:x['checkin_time'])
         except Exception as ex:
             pass
         if resource['emp_id'] not in resuslt:
