@@ -173,7 +173,11 @@ def get_log_content(parentFolder, filename):
                     logemps.parser()
                     logemps.log_emps.sort(key=lambda x: x.request_id)
                     #print("%s - hist length: %s" % (resource['emp_id'], len(logemps.log_emps)))
+                    tmp_check_in_date = None
                     for le in logemps.log_emps:  # type: LogEmp
+                        if le.event_code == Events.CHECK_IN['code']:
+                            tmp_check_in_date = le.event_date_time
+
                         if le.event_code == Events.CHECK_OUT['code']:
                             unique_id = '%s_%s'%(le.request_id, le.request_type)
                             if unique_id in tasks_dict:
@@ -190,8 +194,17 @@ def get_log_content(parentFolder, filename):
                                 history_tasks.append(task_obj)
                                 #print("his task %s: " % task_obj['request_id'])
                                 #print(json.dumps(task_info, indent=4))
-                            # else:
-                            #     print("not in task_dict: %s" % unique_id)
+                            else:
+                                print("Not found request %s, return default task."%le.request_id)
+                                his_t = AssignedTask(le.request_id, le.request_type, '', '',
+                                                     '', '', '',
+                                                     '', 'N/A', '',
+                                                     '', str(tmp_check_in_date),
+                                                     str(le.event_date_time), '', '', '')
+                                task_obj = his_t.__dict__
+                                task_obj['is_history_task'] = "1"
+                                history_tasks.append(task_obj)
+
                     history_tasks.sort(key=lambda x:x['checkin_time'])
         except Exception as ex:
             pass
