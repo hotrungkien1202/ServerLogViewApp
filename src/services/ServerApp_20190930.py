@@ -195,31 +195,39 @@ def get_log_content(parentFolder, filename):
 
                             if le.event_code == Events.CHECK_OUT['code']:
                                 unique_id = '%s_%s'%(le.request_id, le.request_type)
+
+                                if tmp_check_in_date is None:
+                                    if tmp_accept_date is None:
+                                        if tmp_assigned_date is None:
+                                            if le.request_type == 1:
+                                                tmp_check_in_date = le.event_date_time - datetime.timedelta(hours=1)
+                                            else:
+                                                tmp_check_in_date = le.event_date_time - datetime.timedelta(hours=0.5)
+                                        else:
+                                            tmp_check_in_date = tmp_assigned_date
+                                    else:
+                                        tmp_check_in_date = tmp_accept_date
+
                                 if unique_id in tasks_dict:
                                     # print("in task_dict: %s" % unique_id)
                                     t = tasks_dict[unique_id]
+                                    checkout_time = t.get('checkout_time', None)
+                                    checkin_time = t.get('checkin_time', '')
+                                    if checkout_time is None:
+                                        checkout_time = le.event_date_time
+                                        checkin_time = tmp_check_in_date
+
                                     his_t = AssignedTask(t["request_id"], t['type'], t['sub_type_1'], t['sub_type_2'],
                                                  t['reason_out_case_type'], t['appointmentdate'], t['manual_priority'],
                                                  t['emp_speciallized'], t['contract'], t['date_confirmed'],
-                                                 t.get('start_time', ''), t.get('checkin_time', ''),
-                                                 t.get('checkout_time', ''), t.get('priority', ''), t.get('late_time', ''),
+                                                 t.get('start_time', ''), str(checkin_time),
+                                                 str(checkout_time), t.get('priority', ''), t.get('late_time', ''),
                                                  t.get('assigned', ''))
                                     task_obj = his_t.__dict__
                                     task_obj['is_history_task'] = "1"
                                     history_tasks.append(task_obj)
                                 else:
                                     print("Not found request %s, return default task."%le.request_id)
-                                    if tmp_check_in_date is None:
-                                        if tmp_accept_date is None:
-                                            if tmp_assigned_date is None:
-                                                if le.request_type == 1:
-                                                    tmp_check_in_date = le.event_date_time - datetime.timedelta(hours=1)
-                                                else:
-                                                    tmp_check_in_date = le.event_date_time - datetime.timedelta(hours=0.5)
-                                            else:
-                                                tmp_check_in_date = tmp_assigned_date
-                                        else:
-                                            tmp_check_in_date = tmp_accept_date
 
                                     his_t = AssignedTask(le.request_id, le.request_type, '', '',
                                                          '', '', '',
