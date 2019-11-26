@@ -211,11 +211,11 @@ def get_log_content(parentFolder, filename):
                                 if unique_id in tasks_dict:
                                     # print("in task_dict: %s" % unique_id)
                                     t = tasks_dict[unique_id]
-                                    checkout_time = t.get('checkout_time', None)
-                                    checkin_time = t.get('checkin_time', '')
-                                    if checkout_time is None:
-                                        checkout_time = le.event_date_time
-                                        checkin_time = tmp_check_in_date
+                                    # checkout_time = t.get('checkout_time', None)
+                                    # checkin_time = t.get('checkin_time', '')
+                                    # if checkout_time is None:
+                                    checkout_time = le.event_date_time
+                                    checkin_time = tmp_check_in_date
 
                                     his_t = AssignedTask(t["request_id"], t['type'], t['sub_type_1'], t['sub_type_2'],
                                                  t['reason_out_case_type'], t['appointmentdate'], t['manual_priority'],
