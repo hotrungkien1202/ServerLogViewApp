@@ -1,5 +1,6 @@
 from flask import Flask, render_template
 import json
+from collections import defaultdict
 from flask_cors import CORS
 import os
 import datetime
@@ -172,22 +173,72 @@ def get_log_content(parentFolder, filename):
                     logemps = LogEmps(resource['emp_id'].strip(), logemp_str)
                     logemps.parser()
                     logemps.log_emps.sort(key=lambda x: x.event_date_time)
-                    for le in logemps.log_emps:  # type: LogEmp
-                        if le.event_code == Events.CHECK_OUT['code']:
-                            unique_id = '%s_%s'%(le.request_id, le.request_type)
-                            if unique_id in tasks_dict:
-                                t = tasks_dict[unique_id]
-                                his_t = AssignedTask(t["request_id"], t['type'], t['sub_type_1'], t['sub_type_2'],
-                                             t['reason_out_case_type'], t['appointmentdate'], t['manual_priority'],
-                                             t['emp_speciallized'], t['contract'], t['date_confirmed'],
-                                             t.get('start_time', ''), t.get('checkin_time', ''),
-                                             t.get('checkout_time', ''), t.get('priority', ''), t.get('late_time', ''),
-                                             t.get('assigned', ''))
-                                task_obj = his_t.__dict__
-                                task_obj['is_history_task'] = "1"
-                                history_tasks.append(task_obj)
-                                #print("his task %s: " % task_obj['request_id'])
-                                #print(json.dumps(task_info, indent=4))
+                    logemps.log_emps.sort(key=lambda x: x.request_id)
+                    #print("%s - hist length: %s" % (resource['emp_id'], len(logemps.log_emps)))
+
+                    ite_list = separate_log_group(logemps.log_emps)
+                    # print(ite_list)
+                    #resource["emp_assigned"] = len(ite_list)
+                    for list_elm in ite_list.values():
+                        tmp_check_in_date = None
+                        tmp_accept_date = None
+                        tmp_assigned_date = None
+
+                        for le in list_elm: # type: LogEmp
+                            #print("%s-%s-%s"%(le.request_id, le.event_desc, le.event_date_time))
+                            if le.event_code == Events.CHECK_IN['code']:
+                                tmp_check_in_date = le.event_date_time
+                            if le.event_code == Events.ACCEPT_TASK['code']:
+                                tmp_accept_date = le.event_date_time
+                            if le.event_code == Events.ASSIGNED_TASK['code']:
+                                tmp_assigned_date = le.event_date_time
+
+                            if le.event_code == Events.CHECK_OUT['code']:
+                                unique_id = '%s_%s'%(le.request_id, le.request_type)
+
+                                if tmp_check_in_date is None:
+                                    if tmp_accept_date is None:
+                                        if tmp_assigned_date is None:
+                                            if le.request_type == 1:
+                                                tmp_check_in_date = le.event_date_time - datetime.timedelta(hours=1)
+                                            else:
+                                                tmp_check_in_date = le.event_date_time - datetime.timedelta(hours=0.5)
+                                        else:
+                                            tmp_check_in_date = tmp_assigned_date
+                                    else:
+                                        tmp_check_in_date = tmp_accept_date
+
+                                if unique_id in tasks_dict:
+                                    # print("in task_dict: %s" % unique_id)
+                                    t = tasks_dict[unique_id]
+                                    # checkout_time = t.get('checkout_time', None)
+                                    # checkin_time = t.get('checkin_time', '')
+                                    # if checkout_time is None:
+                                    checkout_time = le.event_date_time
+                                    checkin_time = tmp_check_in_date
+
+                                    his_t = AssignedTask(t["request_id"], t['type'], t['sub_type_1'], t['sub_type_2'],
+                                                 t['reason_out_case_type'], t['appointmentdate'], t['manual_priority'],
+                                                 t['emp_speciallized'], t['contract'], t['date_confirmed'],
+                                                 t.get('start_time', ''), str(checkin_time),
+                                                 str(checkout_time), t.get('priority', ''), t.get('late_time', ''),
+                                                 t.get('assigned', ''))
+                                    task_obj = his_t.__dict__
+                                    task_obj['is_history_task'] = "1"
+                                    history_tasks.append(task_obj)
+                                else:
+                                    print("Not found request %s, return default task."%le.request_id)
+
+                                    his_t = AssignedTask(le.request_id, le.request_type, '', '',
+                                                         '', '', '',
+                                                         '', 'N/A', '',
+                                                         '', str(tmp_check_in_date),
+                                                         str(le.event_date_time), '', '', '')
+                                    task_obj = his_t.__dict__
+                                    task_obj['is_history_task'] = "1"
+                                    history_tasks.append(task_obj)
+
+                    history_tasks.sort(key=lambda x:x['checkin_time'])
         except Exception as ex:
             pass
         if resource['emp_id'] not in resuslt:
@@ -206,6 +257,19 @@ def get_log_content(parentFolder, filename):
     final_rs['load_factor'] = load_factor
     final_rs['employees'] = rs
     return json.dumps(final_rs)
+
+
+def separate_log_group(log_emps):
+    tmp_dict = {}
+    for emp in log_emps:
+        unique_id = "%s_%s"%(emp.request_id, emp.request_type)
+        if not unique_id in tmp_dict:
+            tmp_list = [emp]
+            tmp_dict[unique_id] = tmp_list
+        else:
+            tmp_list = tmp_dict[unique_id]
+            tmp_list.append(emp)
+    return tmp_dict
 
 
 def custom_cmp(json):
