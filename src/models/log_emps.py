@@ -1,5 +1,5 @@
 from common.utils import *
-import os;
+import os
 
 def parser_special_date_time_str(str_d_time_):
     double_dot_pos = str_d_time_.strip().index(':')
@@ -139,6 +139,7 @@ class LogEmps:
         return result
 
     def parser(self):
+        # print("parser log emp ==========================")
         if not is_null_or_empty(self.str_log_elm):
             elms = self.str_log_elm.strip().split(';')
             for elm in elms:
@@ -146,7 +147,21 @@ class LogEmps:
                     request_id, request_type, event_code, event_desc, event_date_time = self.__parser_log_item(
                         elm.strip())
                     log = LogEmp(self.emp_id, request_id, request_type, event_code, event_desc, event_date_time)
-                    self.log_emps.append(log)
+                    # check log is in list
+                    is_existed_in_log = False
+                    # print ("log.request_id, log.request_type, log.event_code: %s, %s, %s" % (log.request_id, log.request_type, log.event_code))
+                    for tmp_log in self.log_emps:
+                        if log.request_id == tmp_log.request_id and log.request_type == tmp_log.request_type and log.event_code == tmp_log.event_code:
+                            is_existed_in_log = True
+                            tmp_log.emp_id = log.emp_id
+                            tmp_log.request_id = log.request_id
+                            tmp_log.request_type = log.request_type
+                            tmp_log.event_code = log.event_code
+                            tmp_log.event_desc = log.event_desc
+                            tmp_log.event_date_time = log.event_date_time
+                            break
+                    if not is_existed_in_log:
+                        self.log_emps.append(log)
         pass
 
     def __parser_log_item(self, str_log_item):
