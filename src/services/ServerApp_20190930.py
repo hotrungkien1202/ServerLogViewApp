@@ -607,6 +607,34 @@ def count_total_employee(parentFolder):
         pass
     return json.dumps(obj)
 
+
+@app.route('/emp_for_task/<day>/<block_id>/<unique_id>', methods=['GET'])
+def get_task_for_emp(day, block_id, unique_id):
+    __emp_dict_file = empsLogBaseURL + '/%s/%s.json' % (day, block_id)
+    emp_dict = read_json_from_file(__emp_dict_file)
+    result = {}
+    for key in emp_dict:
+        log_emp = emp_dict[key].get('log_emp','')
+        log_emp_list = log_emp.strip().split(";")
+        for log_task in log_emp_list:
+            log_key = log_task[0:12]
+            if log_key == unique_id:
+                code = log_task.strip().split(",")[0][-1]
+                first_index = log_task.strip().split(",")[1].find(":")+1
+                __date = log_task.strip().split(",")[1][first_index:len(log_task)]
+                obj = {
+                    "emp_id": key,
+                    "event_code": code,
+                    "date": __date
+                }
+                if unique_id not in result:
+                    result[unique_id] = [obj]
+                else:
+                    result[unique_id].append(obj)
+    result[unique_id].sort(key = lambda x: x["date"])
+    return json.dumps(result)
+
+
 def get_file_name_only(full_path):
     arrs = full_path.split('/')
     return arrs[len(arrs) - 1]
