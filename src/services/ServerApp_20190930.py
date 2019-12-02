@@ -172,6 +172,7 @@ def get_log_content(parentFolder, filename):
                 if not is_null_or_empty(logemp_str):
                     logemps = LogEmps(resource['emp_id'].strip(), logemp_str)
                     logemps.parser()
+
                     logemps.log_emps.sort(key=lambda x: x.event_date_time)
                     logemps.log_emps.sort(key=lambda x: x.request_id)
                     #print("%s - hist length: %s" % (resource['emp_id'], len(logemps.log_emps)))
@@ -617,7 +618,7 @@ def get_task_for_emp(day, block_id, unique_id):
         log_emp = emp_dict[key].get('log_emp','')
         log_emp_list = log_emp.strip().split(";")
         for log_task in log_emp_list:
-            log_key = log_task[0:12]
+            log_key = log_task.strip()[0:12]
             if log_key == unique_id:
                 code = log_task.strip().split(",")[0][-1]
                 first_index = log_task.strip().split(",")[1].find(":")+1
@@ -631,8 +632,18 @@ def get_task_for_emp(day, block_id, unique_id):
                     result[unique_id] = [obj]
                 else:
                     result[unique_id].append(obj)
-    result[unique_id].sort(key = lambda x: x["date"])
-    return json.dumps(result)
+    if len(result) > 0:
+        result[unique_id].sort(key = lambda x: x["date"])
+        rs= {
+            "unique_id": unique_id,
+            "event_log": result[unique_id]
+        }
+    else:
+        rs = {
+            "unique_id": unique_id,
+            "event_log": []
+        }
+    return json.dumps(rs)
 
 
 def get_file_name_only(full_path):
