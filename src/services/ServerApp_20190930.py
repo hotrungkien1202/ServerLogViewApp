@@ -99,7 +99,7 @@ def get_blocks(parentFolder, time):
             data = read_json_from_file(path)
             input_ = data['input'][0]
             b = Block(input_.get('block_id', ''), input_.get('block_name', ''), input_.get('block_distance', ''), input_.get('block_ability', ''), data.get('version', ''))
-            if not any(r['block_id'] == b.block_id for r in result):
+            if b.block_name != '' and not any(r['block_id'] == b.block_id for r in result):
                 result.append(b.__dict__)
         result.sort(key=lambda x: x['block_name'])
     except Exception as e:
@@ -369,7 +369,8 @@ def statistic_assigned_task_for_employee(parentFolder, time):
             obj["employees"] = employees
             obj["capacity"] = "%.2f" % (capacity / float(len(employees)))
             obj["load_factor"] = load_factor
-            result.append(obj)
+            if obj['block_name'] != '':
+                result.append(obj)
             result.sort(key=lambda x: x['block_name'])
     except Exception as e:
         pass
