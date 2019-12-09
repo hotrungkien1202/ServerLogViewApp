@@ -77,7 +77,7 @@ class LogEmps:
 
         self.log_emps = []
 
-    def make_json(self, baseURL, parentFolder):
+    def make_json(self, baseURL, parentFolder, block_id):
         return {
             "emp_id": str(self.emp_id),
             "block_id": str(self.block_id),
@@ -91,25 +91,25 @@ class LogEmps:
             "performance": self.performance,
             "request_impossible": str(self.request_impossible),
             "type": str(self.type),
-            "event_logs": self.__make_log_list_json(baseURL, parentFolder)
+            "event_logs": self.__make_log_list_json(baseURL, parentFolder, block_id)
         }
 
-    def __make_log_list_json(self, baseURL, parentFolder):
+    def __make_log_list_json(self, baseURL, parentFolder, block_id):
         rs = []
         for log in self.log_emps:  # type: LogEmp
             rs.append({
-                "request": self.get_latest_request_info(baseURL, log.request_id, log.request_type, parentFolder),
+                "request": self.get_latest_request_info(baseURL, log.request_id, log.request_type, parentFolder, block_id),
                 "event_code": log.event_code,
                 "event_desc": log.event_desc,
                 "event_date_time": str(log.event_date_time)
             })
         return rs
 
-    def get_latest_request_info(self, baseURL, request_id, request_type, parentFolder):
+    def get_latest_request_info(self, baseURL, request_id, request_type, parentFolder, block_id):
         # type: (str, str, str) -> object
         result = {}
         try:
-            command = 'grep -E "\\"request_id\\"\s*\:\s*' + request_id.strip() + '" -rl ' + baseURL + '/' + parentFolder.strip() + "/*/*/* > request_info_list.txt"
+            command = 'grep -E "\\"request_id\\"\s*\:\s*' + request_id.strip() + '" -rl ' + baseURL + '/' + parentFolder.strip() + "/*/" + block_id + "/ > request_info_list.txt"
             os.system(command)
             rq_info_files = []
             with open("request_info_list.txt") as file:

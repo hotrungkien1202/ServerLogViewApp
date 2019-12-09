@@ -519,11 +519,11 @@ def get_last_time_log(parentFolder):
     return json.dumps(latest_time)
 
 
-@app.route('/emp_info/<parentFolder>/<emp_id>', methods=['GET'])
-def get_emp_info(parentFolder, emp_id):
+@app.route('/emp_info/<parentFolder>/<emp_id>/<block_id>', methods=['GET'])
+def get_emp_info(parentFolder, emp_id, block_id):
     result = {}
     try:
-        command = 'grep -E "\\"emp_id\\"\s*\:\s*\\"' + emp_id.strip() + '\\"" -rl ' + baseURL + '/' + parentFolder.strip() + "/*/*/* > emp_info_list.txt"
+        command = 'grep -E "\\"emp_id\\"\s*\:\s*\\"' + emp_id.strip() + '\\"" -rl ' + baseURL + '/' + parentFolder.strip() + '/*/' + str(block_id) + '/* > emp_info_list.txt'
         os.system(command)
         emp_info_files = []
         with open("emp_info_list.txt") as file:
@@ -558,7 +558,8 @@ def get_emp_info(parentFolder, emp_id):
                         logemps.parser()
                         logemps.log_emps.sort(key=lambda x: x.event_date_time)
                         # print(len(logemps.log_emps))
-                        result = logemps.make_json(baseURL, parentFolder)
+                        result = logemps.make_json(baseURL, parentFolder, str(block_id))
+                        # print("make json for file [%s]." % em_info_file)
                         result["log_file"] = get_file_name_only(em_info_file)
                     break
         pass
