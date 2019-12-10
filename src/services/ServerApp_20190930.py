@@ -93,17 +93,18 @@ def get_blocks(parentFolder, time):
     try:
         blocks = os.listdir(baseURL + "/" + parentFolder + "/" + time)
         for block in blocks:
-            filenames = os.listdir(baseURL + "/" + parentFolder + "/" + time + "/" + block)
-            filename = max(filenames)
-            path = baseURL + "/" + parentFolder + "/" + time + "/" + block + "/" + filename
-            data = read_json_from_file(path)
-            input_ = data['input'][0]
-            b = Block(input_.get('block_id', ''), input_.get('block_name', ''), input_.get('block_distance', ''), input_.get('block_ability', ''), data.get('version', ''))
-            if b.block_name != '' and not any(r['block_id'] == b.block_id for r in result):
-                result.append(b.__dict__)
+            if len(block) == 6:
+                filenames = os.listdir(baseURL + "/" + parentFolder + "/" + time + "/" + block)
+                filename = max(filenames)
+                path = baseURL + "/" + parentFolder + "/" + time + "/" + block + "/" + filename
+                data = read_json_from_file(path)
+                input_ = data['input'][0]
+                b = Block(input_.get('block_id', ''), input_.get('block_name', ''), input_.get('block_distance', ''), input_.get('block_ability', ''), data.get('version', ''))
+                if b.block_name != '' and not any(r['block_id'] == b.block_id for r in result):
+                    result.append(b.__dict__)
         result.sort(key=lambda x: x['block_name'])
     except Exception as e:
-        print(e)
+        raise e
     return json.dumps(result)
 
 
