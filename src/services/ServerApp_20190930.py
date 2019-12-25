@@ -12,6 +12,7 @@ from models.log_emps import *
 from models.task import *
 from models.employee import *
 from models.block import *
+import time
 app = Flask(__name__)
 CORS(app)
 baseURL = "./services/output"
@@ -104,7 +105,7 @@ def get_blocks(parentFolder, time):
                     result.append(b.__dict__)
         result.sort(key=lambda x: x['block_name'])
     except Exception as e:
-        raise e
+        pass
     return json.dumps(result)
 
 
@@ -320,14 +321,19 @@ def download_input(parentFolder, filename):
 @app.route('/contract/<parentFolder>/<contract_id>', methods=['GET'])
 def get_files_by_contract(parentFolder, contract_id):
     fileNames = []
-    command = 'grep -E ' + contract_id + ' -rl ' + baseURL + '/' + parentFolder + "/ > contract_data.txt"
+    time1 = time.time();
+    command = 'LC_ALL=C fgrep -rl ' + contract_id + ' ' + baseURL + '/' + parentFolder + "/ > contract_data.txt"
+    time2 = time.time();
     os.system(command)
+    print("Time to execute grep command ", time2 - time1)
     with open("contract_data.txt") as file:
         for line in file:
             ll = str(line).replace('\n', '').split("/")
             fileNames.append(ll[len(ll) - 1])
     fileNames.sort(reverse=True)
     result = fileNames[0:10]
+    time3 = time.time()
+    print("Time to execute search function ", time3 - time1)
     return json.dumps(result)
 
 
