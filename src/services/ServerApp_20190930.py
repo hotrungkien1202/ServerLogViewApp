@@ -322,9 +322,9 @@ def download_input(parentFolder, filename):
 def get_files_by_contract(parentFolder, contract_id):
     fileNames = []
     time1 = time.time();
-    command = 'LC_ALL=C fgrep -rl ' + contract_id + ' ' + baseURL + '/' + parentFolder + "/ > contract_data.txt"
-    time2 = time.time();
+    command = 'LC_ALL=C fgrep -rlw ' + contract_id + ' ' + baseURL + '/' + parentFolder + "/ > contract_data.txt"
     os.system(command)
+    time2 = time.time();
     print("Time to execute grep command ", time2 - time1)
     with open("contract_data.txt") as file:
         for line in file:
