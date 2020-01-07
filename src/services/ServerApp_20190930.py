@@ -225,7 +225,7 @@ def get_log_content(parentFolder, filename):
                                                  t['emp_speciallized'], t['contract'], t['date_confirmed'],
                                                  t.get('start_time', ''), str(checkin_time),
                                                  str(checkout_time), t.get('priority', ''), t.get('late_time', ''),
-                                                 t.get('assigned', ''))
+                                                 t.get('assigned', ''), t.get('appointmentdate2', ''), t.get('camera', 0), t.get('timezone', ''))
                                     task_obj = his_t.__dict__
                                     task_obj['is_history_task'] = "1"
                                     history_tasks.append(task_obj)
@@ -236,7 +236,7 @@ def get_log_content(parentFolder, filename):
                                                          '', '', '',
                                                          '', 'N/A', '',
                                                          '', str(tmp_check_in_date),
-                                                         str(le.event_date_time), '', '', '')
+                                                         str(le.event_date_time), '', '', '', '', 0, '')
                                     task_obj = his_t.__dict__
                                     task_obj['is_history_task'] = "1"
                                     history_tasks.append(task_obj)
@@ -285,7 +285,10 @@ def custom_cmp(json):
 def get_task_info_by_request_id(tasks, request_id):
     for task in tasks:
         if int(task['request_id']) == int(request_id):
-            return Task(task.get('request_id', ''), task.get('type', ''), task.get('sub_type_1', ''), task.get('sub_type_2', ''),task.get('reason_out_case_type', ''), task.get('appointmentdate', ''), task.get('manual_priority', ''), task.get('emp_speciallized', ''), task.get('contract', ''), task.get('date_confirmed', 0))
+            return Task(task.get('request_id', ''), task.get('type', ''), task.get('sub_type_1', ''), task.get('sub_type_2', ''),
+                        task.get('reason_out_case_type', ''), task.get('appointmentdate', ''), task.get('manual_priority', ''),
+                        task.get('emp_speciallized', ''), task.get('contract', ''), task.get('date_confirmed', 0),
+                        task.get('appointmentdate2',''), task.get('camera', 0), task.get('time_zone', ''))
     return None
 
 
@@ -297,7 +300,8 @@ def get_assigned_task_by_request_id(hcOutputData, tasks, request_id):
             task = get_task_info_by_request_id(tasks, request_id)
             # print(task)
             return AssignedTask(task.request_id, task.type, task.sub_type_1, task.sub_type_2, task.reason_out_case, task.appointmentdate, task.manual_priority, task.emp_speciallized, task.contract,task.date_confirmed,
-                                hc.get('start_time', ''), hc.get('checkin_time', ''), hc.get('checkout_time', ''), hc.get('priority', ''), hc.get('late_time', ''), hc.get('assigned', ''))
+                                hc.get('start_time', ''), hc.get('checkin_time', ''), hc.get('checkout_time', ''), hc.get('priority', ''), hc.get('late_time', ''), hc.get('assigned', ''),
+                                task.appointmentdate2, task.is_camera_taks, task.time_zone)
     return None
 
 def get_employee_by_emp_id(resources, emp_id):
