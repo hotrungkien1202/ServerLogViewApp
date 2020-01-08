@@ -288,7 +288,7 @@ def get_task_info_by_request_id(tasks, request_id):
             return Task(task.get('request_id', ''), task.get('type', ''), task.get('sub_type_1', ''), task.get('sub_type_2', ''),
                         task.get('reason_out_case_type', ''), task.get('appointmentdate', ''), task.get('manual_priority', ''),
                         task.get('emp_speciallized', ''), task.get('contract', ''), task.get('date_confirmed', 0),
-                        task.get('appointmentdate2',''), task.get('camera', 0), task.get('time_zone', ''))
+                        task.get('appointmentdate2',''), task.get('camera', 0), task.get('timezone', ''))
     return None
 
 
